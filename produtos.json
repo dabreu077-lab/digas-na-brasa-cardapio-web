@@ -38,28 +38,28 @@
     "id": 5,
     "nome": "JANTINHA DE FRANGO",
     "descricao": "Arroz, tropeiro, farofa, vinagrete separado e sobrecoxa desossada.",
-    "preco": 19.9,
+    "preco": 24.9,
     "foto": "fotos/digas_foto_05.jpg"
   },
   {
     "id": 6,
     "nome": "JANTINHA DE LINGUIÇA",
     "descricao": "Arroz, tropeiro, farofa, vinagrete separado e linguiça toscana.",
-    "preco": 19.9,
+    "preco": 24.9,
     "foto": "fotos/digas_foto_06.jpg"
   },
   {
     "id": 7,
     "nome": "JANTINHA BOVINA",
     "descricao": "Arroz, tropeiro, farofa, vinagrete separado e carne bovina.",
-    "preco": 24.9,
+    "preco": 31.9,
     "foto": "fotos/digas_foto_07.jpg"
   },
   {
     "id": 8,
     "nome": "MISTA DA DIGAS",
     "descricao": "Arroz, tropeiro, farofa, vinagrete, carne bovina, frango e linguiça.",
-    "preco": 26.9,
+    "preco": 32.9,
     "foto": "fotos/digas_foto_08.jpg"
   },
   {

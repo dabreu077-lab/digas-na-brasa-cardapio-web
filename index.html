@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15100e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Digas na Brasa">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Digas na Brasa | Cardápio</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#100e0c;color:#fff5ed;font-family:system-ui,-apple-system,Arial,sans-serif}
+header{background:linear-gradient(135deg,#28140b,#120e0c);padding:24px 18px;border-bottom:2px solid #f97316}
+.brand{font-size:29px;font-weight:900;letter-spacing:-1px}
+.brand span{color:#fb923c}
+header p{color:#fed7aa;margin:8px 0 0;font-size:14px}
+header small{color:#ddd0c4}
+main{max-width:1050px;margin:auto;padding:14px 14px 110px}
+#busca{width:100%;border:1px solid #493225;background:#241b16;color:white;padding:14px;border-radius:14px;font-size:16px}
+nav{display:flex;gap:8px;overflow-x:auto;padding:15px 0;position:sticky;top:0;background:#100e0c;z-index:3}
+nav button{white-space:nowrap;background:#30221b;color:#f9e5d3;border:1px solid #493225;padding:11px 16px;border-radius:25px;font-weight:700}
+nav button.ativo{background:#f97316;color:#1b0d04;border-color:#f97316}
+.grid{display:grid;grid-template-columns:1fr;gap:13px}
+.card{background:#211915;border:1px solid #3b2a20;border-radius:18px;padding:10px;display:flex;gap:12px;min-height:155px}
+.card img{width:125px;height:135px;object-fit:contain;background:#fff9f2;border-radius:12px;flex-shrink:0}
+.info{flex:1;display:flex;flex-direction:column;min-width:0}
+.info h3{font-size:15px;margin:3px 0 6px}
+.info p{font-size:12px;color:#cdb7a7;margin:0 0 9px;line-height:1.45}
+.preco{font-size:19px;font-weight:900;color:#fb923c;margin-top:auto}
+.add{background:#f97316;border:none;color:#210d03;font-weight:900;border-radius:10px;padding:10px;margin-top:9px;width:100%}
+.fixed{position:fixed;bottom:0;left:0;right:0;padding:12px;background:#100e0cf0;border-top:1px solid #493225;z-index:5}
+.fixed button{display:block;width:100%;max-width:650px;margin:auto;padding:15px;background:#f97316;color:#1d0b02;border:0;border-radius:14px;font-weight:900;font-size:16px}
+dialog{border:1px solid #784322;background:#1a1411;color:#fff5ed;border-radius:18px;width:95%;max-width:600px;max-height:90vh;overflow-y:auto;padding:17px}
+dialog::backdrop{background:#000b}
+dialog h2{margin:5px 0 18px}
+dialog input,dialog select,dialog textarea{width:100%;background:#30231c;color:#fff;border:1px solid #67432e;border-radius:10px;padding:12px;font-size:16px;margin:5px 0 13px}
+dialog label{display:block;font-size:13px;color:#e4c8b4}
+.linha{border-bottom:1px solid #493225;padding:12px 0}
+.linha strong{display:block;font-size:14px}
+.quantidade{display:flex;align-items:center;gap:12px;margin:8px 0}
+.quantidade button{background:#51301c;color:white;border:0;border-radius:8px;padding:7px 15px;font-size:18px}
+.total{font-size:22px;color:#fb923c;font-weight:900;margin:15px 0}
+.enviar{width:100%;border:0;border-radius:12px;background:#25d366;color:#062b12;font-size:16px;font-weight:900;padding:15px}
+.fechar{float:right;background:#463025;color:#fff;border:0;border-radius:9px;padding:9px 13px}
+footer{text-align:center;color:#ae9685;font-size:12px;padding:20px;line-height:1.7}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">🔥 DIGAS <span>NA BRASA</span></div>
+<p>🍔 Sabor de verdade, direto da nossa brasa!</p>
+<small>🛵 Entrega rápida • 💬 Pedidos pelo WhatsApp</small>
+</header>
+<main>
+<input id="busca" placeholder="🔎 Buscar no cardápio..." oninput="mostrar()">
+<nav id="categorias"></nav>
+<div class="grid" id="lista"></div>
+<footer>
+São Francisco • Minas Gerais<br>
+📱 iPhone: Safari → Compartilhar → Adicionar à Tela de Início
+</footer>
+</main>
+
+<div class="fixed">
+<button onclick="abrir()">🛒 VER PEDIDO (<span id="qtd">0</span>) • <span id="resumo">R$ 0,00</span></button>
+</div>
+
+<dialog id="pedido">
+<button class="fechar" onclick="document.getElementById('pedido').close()">✕ Fechar</button>
+<h2>🛒 Meu pedido</h2>
+<div id="itens"></div>
+<div class="total" id="total">R$ 0,00</div>
+<form id="checkout" onsubmit="finalizar(event)">
+<label>Seu nome *</label>
+<input id="nome" required placeholder="Nome do cliente">
+<label>Telefone</label>
+<input id="telefone" type="tel" placeholder="DDD + número">
+<label>Entrega ou retirada *</label>
+<select id="entrega" onchange="atualizar()">
+<option value="0">Retirada na loja — grátis</option>
+<option value="3">Entrega — taxa R$ 3,00</option>
+<option value="5">Entrega — taxa R$ 5,00</option>
+</select>
+<label>Endereço para entrega</label>
+<input id="endereco" placeholder="Rua, número, bairro e referência">
+<label>Forma de pagamento *</label>
+<select id="pagamento">
+<option>Pix</option>
+<option>Cartão</option>
+<option>Dinheiro</option>
+</select>
+<label>Troco para (se necessário)</label>
+<input id="troco" placeholder="Ex.: R$ 100,00">
+<label>Observações gerais</label>
+<textarea id="observacoes" rows="2" placeholder="Alguma preferência?"></textarea>
+<button type="submit" class="enviar">💬 FINALIZAR NO WHATSAPP</button>
+</form>
+</dialog>
+
+<script>
+const produtos = [{"id": 0, "nome": "COSTELA DA DIGAS", "descricao": "Brioche, costela desfiada, queijo coalho, cebola dourada e maionese de alho assado.", "preco": 28.9, "foto": "fotos/digas_foto_00.jpg", "categoria": "LANCHES"}, {"id": 1, "nome": "MATA-FOME CREMOSO", "descricao": "Pão brioche, hambúrguer suculento, cream cheese, ovo, bacon crocante, salsicha, calabresa, milho, batata palha e picles.", "preco": 26.9, "foto": "fotos/digas_foto_01.jpg", "categoria": "LANCHES"}, {"id": 2, "nome": "BRASA COMPLETO", "descricao": "Pão tostado, hambúrguer suculento, muçarela, ovo, bacon, calabresa, batata palha, alface, tomate e molho especial da casa.", "preco": 29.9, "foto": "fotos/digas_foto_02.jpg", "categoria": "LANCHES"}, {"id": 3, "nome": "ESPECIAL DA CASA", "descricao": "Brioche, hambúrguer, queijo coalho, cebola e barbecue levemente picante.", "preco": 27.9, "foto": "fotos/digas_foto_03.jpg", "categoria": "LANCHES"}, {"id": 4, "nome": "CHURRASCO NO PÃO", "descricao": "Pão francês, churrasco fatiado, muçarela e vinagrete escorrido. Maionese de alho opcional.", "preco": 24.9, "foto": "fotos/digas_foto_04.jpg", "categoria": "LANCHES"}, {"id": 5, "nome": "JANTINHA DE FRANGO", "descricao": "Arroz, tropeiro, farofa, vinagrete separado e sobrecoxa desossada.", "preco": 19.9, "foto": "fotos/digas_foto_05.jpg", "categoria": "JANTINHAS"}, {"id": 6, "nome": "JANTINHA DE LINGUIÇA", "descricao": "Arroz, tropeiro, farofa, vinagrete separado e linguiça toscana.", "preco": 19.9, "foto": "fotos/digas_foto_06.jpg", "categoria": "JANTINHAS"}, {"id": 7, "nome": "JANTINHA BOVINA", "descricao": "Arroz, tropeiro, farofa, vinagrete separado e carne bovina.", "preco": 24.9, "foto": "fotos/digas_foto_07.jpg", "categoria": "JANTINHAS"}, {"id": 8, "nome": "MISTA DA DIGAS", "descricao": "Arroz, tropeiro, farofa, vinagrete, carne bovina, frango e linguiça.", "preco": 26.9, "foto": "fotos/digas_foto_08.jpg", "categoria": "JANTINHAS"}, {"id": 9, "nome": "FRANGO CREMOSO", "descricao": "Mandioca, frango desfiado, alho e cheiro-verde. Torradinhas separadas.", "preco": 17.9, "foto": "fotos/digas_foto_09.jpg", "categoria": "CALDOS"}, {"id": 10, "nome": "CARNE-SECA CREMOSA", "descricao": "Mandioca, carne-seca desfiada e cebola refogada. Torradinhas separadas.", "preco": 21.9, "foto": "fotos/digas_foto_10.jpg", "categoria": "CALDOS"}, {"id": 11, "nome": "VACA ATOLADA", "descricao": "Mandioca com costela desfiada e caldo do cozimento. Torradinhas separadas.", "preco": 21.9, "foto": "fotos/digas_foto_11.jpg", "categoria": "CALDOS"}, {"id": 12, "nome": "BATATA COM BACON E QUEIJO", "descricao": "Creme de batata, muçarela e cheiro-verde. Bacon e torradinhas separados.", "preco": 18.9, "foto": "fotos/digas_foto_12.jpg", "categoria": "CALDOS"}, {"id": 13, "nome": "BATATA FRITA", "descricao": "Porção de batata frita.", "preco": 14.9, "foto": "fotos/digas_foto_13.jpg", "categoria": "PORÇÕES"}, {"id": 14, "nome": "BATATA COM QUEIJO E BACON", "descricao": "Batata frita com cobertura de queijo e bacon.", "preco": 21.9, "foto": "fotos/digas_foto_14.jpg", "categoria": "PORÇÕES"}, {"id": 15, "nome": "MANDIOCA FRITA", "descricao": "Porção de mandioca frita.", "preco": 16.9, "foto": "fotos/digas_foto_15.jpg", "categoria": "PORÇÕES"}, {"id": 16, "nome": "PÃO DE ALHO", "descricao": "Uma unidade dourada na brasa.", "preco": 6.9, "foto": "fotos/digas_foto_16.jpg", "categoria": "PORÇÕES"}, {"id": 17, "nome": "QUEIJO COALHO NA BRASA", "descricao": "Um espeto de queijo coalho na brasa.", "preco": 7.9, "foto": "fotos/digas_foto_17.jpg", "categoria": "PORÇÕES"}, {"id": 18, "nome": "ÁGUA SEM GÁS", "descricao": "500 ml.", "preco": 3.5, "foto": "fotos/digas_foto_18.jpg", "categoria": "BEBIDAS"}, {"id": 19, "nome": "ÁGUA COM GÁS", "descricao": "500 ml.", "preco": 4.5, "foto": "fotos/digas_foto_19.jpg", "categoria": "BEBIDAS"}, {"id": 20, "nome": "REFRIGERANTE LATA", "descricao": "350 ml. Consulte os sabores disponíveis.", "preco": 6.0, "foto": "fotos/digas_foto_20.jpg", "categoria": "BEBIDAS"}, {"id": 21, "nome": "REFRIGERANTE 2 LITROS", "descricao": "Consulte os sabores disponíveis.", "preco": 13.0, "foto": "fotos/digas_foto_21.jpg", "categoria": "BEBIDAS"}, {"id": 22, "nome": "SUCO DE ABACAXI", "descricao": "Suco de polpa, 400 ml.", "preco": 7.0, "foto": "fotos/digas_foto_22.jpg", "categoria": "BEBIDAS"}, {"id": 23, "nome": "SUCO DE GOIABA", "descricao": "Suco de polpa, 400 ml.", "preco": 7.0, "foto": "fotos/digas_foto_23.jpg", "categoria": "BEBIDAS"}, {"id": 24, "nome": "SUCO DE MARACUJÁ", "descricao": "Suco de polpa, 400 ml.", "preco": 7.0, "foto": "fotos/digas_foto_24.jpg", "categoria": "BEBIDAS"}, {"id": 25, "nome": "BRASA BURGER", "descricao": "Pão tostado, hambúrguer, muçarela, alface, tomate e molho da casa.", "preco": 19.9, "foto": "fotos/digas_foto_25.jpg", "categoria": "LANCHES"}, {"id": 26, "nome": "DUPLO NA BRASA", "descricao": "Brioche, dois hambúrgueres, muçarela, bacon, cebola dourada e molho da casa.", "preco": 34.9, "foto": "fotos/digas_foto_26.jpg", "categoria": "LANCHES"}, {"id": 27, "nome": "COMBO MATA-FOME", "descricao": "1 Mata-Fome Cremoso + 1 porção de batata frita + 1 refrigerante lata. Informe o sabor nas observações.", "preco": 42.9, "foto": "fotos/digas_foto_27.jpg", "categoria": "COMBOS"}, {"id": 28, "nome": "COMBO COSTELA", "descricao": "1 Costela da Digas + 1 porção de batata frita + 1 refrigerante lata. Informe o sabor nas observações.", "preco": 44.9, "foto": "fotos/digas_foto_28.jpg", "categoria": "COMBOS"}, {"id": 29, "nome": "COMBO DUPLA", "descricao": "2 Mata-Fome Cremosos + 1 porção de batata frita + 2 refrigerantes lata. Informe os sabores nas observações.", "preco": 74.9, "foto": "fotos/digas_foto_29.jpg", "categoria": "COMBOS"}, {"id": 30, "nome": "HAMBÚRGUER EXTRA", "descricao": "Uma unidade. Informe nas observações em qual lanche adicionar.", "preco": 6.0, "foto": "fotos/digas_foto_30.jpg", "categoria": "ADICIONAIS"}, {"id": 31, "nome": "BACON EXTRA", "descricao": "Informe nas observações em qual lanche adicionar.", "preco": 4.0, "foto": "fotos/digas_foto_31.jpg", "categoria": "ADICIONAIS"}, {"id": 32, "nome": "CALABRESA EXTRA", "descricao": "Informe nas observações em qual lanche adicionar.", "preco": 4.0, "foto": "fotos/digas_foto_32.jpg", "categoria": "ADICIONAIS"}, {"id": 33, "nome": "SALSICHA EXTRA", "descricao": "Uma unidade. Informe nas observações em qual lanche adicionar.", "preco": 2.5, "foto": "fotos/digas_foto_33.jpg", "categoria": "ADICIONAIS"}];
+const whats = "5538999448465";
+const categorias = ["TODOS","LANCHES","COMBOS","JANTINHAS","CALDOS","PORÇÕES","BEBIDAS","ADICIONAIS"];
+let ativa = "TODOS";
+let carrinho = {};
+try { carrinho = JSON.parse(localStorage.getItem("digas_carrinho_ios") || "{}"); }
+catch(e) { carrinho = {}; }
+
+const moeda = n => "R$ " + Number(n).toFixed(2).replace(".",",");
+const esc = s => String(s).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+const normal = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+
+function salvar(){
+ localStorage.setItem("digas_carrinho_ios",JSON.stringify(carrinho));
+}
+
+function subtotal(){
+ return produtos.reduce((s,p)=>s+p.preco*(carrinho[p.id]?.q||0),0);
+}
+function quantidade(){
+ return Object.values(carrinho).reduce((s,x)=>s+(x.q||0),0);
+}
+
+function mostrar(){
+ const busca=normal(document.getElementById("busca").value);
+ document.getElementById("categorias").innerHTML=categorias.map(c=>
+ `<button class="${ativa===c?'ativo':''}" onclick="ativa='${c}';mostrar()">${c}</button>`
+ ).join("");
+ const encontrados=produtos.filter(p=>
+ (ativa==="TODOS"||p.categoria===ativa) &&
+ normal(p.nome+" "+p.descricao).includes(busca)
+ );
+ document.getElementById("lista").innerHTML=encontrados.map(p=>`
+ <article class="card">
+ <img loading="lazy" src="${esc(p.foto)}" alt="${esc(p.nome)}">
+ <div class="info">
+ <h3>${esc(p.nome)}</h3>
+ <p>${esc(p.descricao)}</p>
+ <div class="preco">${moeda(p.preco)}</div>
+ <button class="add" onclick="adicionar(${p.id})">+ ADICIONAR</button>
+ </div></article>`).join("") || "<p>Nenhum produto encontrado.</p>";
+}
+
+function adicionar(id){
+ if(!carrinho[id]) carrinho[id]={q:0,obs:""};
+ carrinho[id].q++;
+ atualizar();
+}
+
+function mudar(id,d){
+ if(!carrinho[id]) return;
+ carrinho[id].q+=d;
+ if(carrinho[id].q<=0) delete carrinho[id];
+ atualizar();
+}
+
+function nota(id,texto){
+ if(carrinho[id]) {
+ carrinho[id].obs=texto;
+ salvar();
+ }
+}
+
+function atualizar(){
+ salvar();
+ document.getElementById("qtd").textContent=quantidade();
+ document.getElementById("resumo").textContent=moeda(subtotal());
+ const selecionados=produtos.filter(p=>(carrinho[p.id]?.q||0)>0);
+ document.getElementById("itens").innerHTML=selecionados.map(p=>`
+ <div class="linha">
+ <strong>${esc(p.nome)} — ${moeda(p.preco*carrinho[p.id].q)}</strong>
+ <div class="quantidade">
+ <button type="button" onclick="mudar(${p.id},-1)">−</button>
+ <b>${carrinho[p.id].q}</b>
+ <button type="button" onclick="mudar(${p.id},1)">+</button>
+ </div>
+ <input placeholder="Observações deste item"
+ value="${esc(carrinho[p.id].obs||"")}"
+ onchange="nota(${p.id},this.value)">
+ </div>`).join("") || "<p>Seu carrinho está vazio.</p>";
+ const taxa=Number(document.getElementById("entrega").value);
+ document.getElementById("total").textContent="Total: "+moeda(subtotal()+taxa);
+}
+
+function abrir(){
+ atualizar();
+ document.getElementById("pedido").showModal();
+}
+
+function finalizar(e){
+ e.preventDefault();
+ if(!quantidade()) return alert("Adicione um produto ao carrinho.");
+ const nome=document.getElementById("nome").value.trim();
+ const telefone=document.getElementById("telefone").value.trim();
+ const taxa=Number(document.getElementById("entrega").value);
+ const endereco=document.getElementById("endereco").value.trim();
+ const pagamento=document.getElementById("pagamento").value;
+ const troco=document.getElementById("troco").value.trim();
+ const obs=document.getElementById("observacoes").value.trim();
+ if(!nome) return alert("Informe seu nome.");
+ if(taxa>0&&!endereco) return alert("Informe o endereço de entrega.");
+
+ const linhas=produtos.filter(p=>(carrinho[p.id]?.q||0)>0).map(p=>{
+ const item=carrinho[p.id];
+ return `${item.q}x ${p.nome} — ${moeda(item.q*p.preco)}`+
+ (item.obs?`\n   Obs.: ${item.obs}`:"");
+ }).join("\n");
+
+ const msg=`🔥🍔 DIGAS NA BRASA\nNOVO PEDIDO\n\n`+
+ `Cliente: ${nome}\n`+
+ (telefone?`Telefone: ${telefone}\n`:"")+
+ `\nITENS:\n${linhas}\n\n`+
+ `Subtotal: ${moeda(subtotal())}\n`+
+ `Entrega: ${taxa?moeda(taxa):"Retirada grátis"}\n`+
+ `TOTAL: ${moeda(subtotal()+taxa)}\n\n`+
+ (taxa?`Endereço: ${endereco}\n`:"Retirada na loja\n")+
+ `Pagamento: ${pagamento}\n`+
+ (troco&&pagamento==="Dinheiro"?`Troco para: ${troco}\n`:"")+
+ (obs?`Observações: ${obs}\n`:"")+
+ `\nPedido realizado pelo aplicativo Digas na Brasa.`;
+ window.location.href="https://wa.me/"+whats+"?text="+encodeURIComponent(msg);
+}
+
+mostrar();
+atualizar();
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+}
+</script>
+</body>
+</html>

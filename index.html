@@ -42,6 +42,11 @@ dialog label{display:block;font-size:13px;color:#e4c8b4}
 .linha strong{display:block;font-size:14px}
 .quantidade{display:flex;align-items:center;gap:12px;margin:8px 0}
 .quantidade button{background:#51301c;color:white;border:0;border-radius:8px;padding:7px 15px;font-size:18px}
+.produto-controles{justify-content:flex-end;margin-top:9px}
+.produto-controles button{min-width:46px;min-height:42px;font-weight:900}
+.produto-controles button:last-child{background:#f97316;color:#210d03}
+.produto-controles button:disabled{opacity:.35}
+
 .total{font-size:22px;color:#fb923c;font-weight:900;margin:15px 0}
 .enviar{width:100%;border:0;border-radius:12px;background:#25d366;color:#062b12;font-size:16px;font-weight:900;padding:15px}
 .fechar{float:right;background:#463025;color:#fff;border:0;border-radius:9px;padding:9px 13px}
@@ -146,7 +151,11 @@ function mostrar(){
  <h3>${esc(p.nome)}</h3>
  <p>${esc(p.descricao)}</p>
  <div class="preco">${moeda(p.preco)}</div>
- <button class="add" onclick="adicionar(${p.id})">+ ADICIONAR</button>
+ <div class="quantidade produto-controles">
+ <button type="button" aria-label="Diminuir quantidade" ${Number(carrinho[p.id]?.q||0)===0?'disabled':''} onclick="mudar(${p.id},-1)">−</button>
+ <b>${carrinho[p.id]?.q||0}</b>
+ <button type="button" aria-label="Aumentar quantidade" onclick="adicionar(${p.id})">+</button>
+ </div>
  </div></article>`).join("") || "<p>Nenhum produto encontrado.</p>";
 }
 
@@ -197,6 +206,7 @@ function atualizar(){
  </div>`).join("") || "<p>Seu carrinho está vazio.</p>";
  const taxa=Number(document.getElementById("entrega").value);
  document.getElementById("total").textContent="Total: "+moeda(subtotal()+taxa);
+ mostrar();
 }
 
 function abrir(){

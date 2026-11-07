@@ -45,6 +45,8 @@ dialog label{display:block;font-size:13px;color:#e4c8b4}
 .total{font-size:22px;color:#fb923c;font-weight:900;margin:15px 0}
 .enviar{width:100%;border:0;border-radius:12px;background:#25d366;color:#062b12;font-size:16px;font-weight:900;padding:15px}
 .fechar{float:right;background:#463025;color:#fff;border:0;border-radius:9px;padding:9px 13px}
+.limpar{background:#4a2118;color:#ffd8c8;border:1px solid #a33b25;border-radius:10px;padding:10px 13px;font-weight:800;margin:0 0 12px}
+
 footer{text-align:center;color:#ae9685;font-size:12px;padding:20px;line-height:1.7}
 @media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -72,6 +74,7 @@ São Francisco • Minas Gerais<br>
 <dialog id="pedido">
 <button class="fechar" onclick="document.getElementById('pedido').close()">✕ Fechar</button>
 <h2>🛒 Meu pedido</h2>
+<button type="button" class="limpar" onclick="limparCarrinho()">🗑️ LIMPAR CARRINHO</button>
 <div id="itens"></div>
 <div class="total" id="total">R$ 0,00</div>
 <form id="checkout" onsubmit="finalizar(event)">
@@ -155,8 +158,16 @@ function adicionar(id){
 
 function mudar(id,d){
  if(!carrinho[id]) return;
- carrinho[id].q+=d;
- if(carrinho[id].q<=0) delete carrinho[id];
+ const proxima=Math.max(0,Number(carrinho[id].q||0)+Number(d));
+ if(proxima===0) delete carrinho[id];
+ else carrinho[id].q=proxima;
+ atualizar();
+}
+
+function limparCarrinho(){
+ if(!quantidade()) return alert("O carrinho já está vazio.");
+ if(!confirm("Tem certeza que deseja remover todos os produtos do carrinho?")) return;
+ carrinho={};
  atualizar();
 }
 

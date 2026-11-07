@@ -43,9 +43,10 @@ dialog label{display:block;font-size:13px;color:#e4c8b4}
 .quantidade{display:flex;align-items:center;gap:12px;margin:8px 0}
 .quantidade button{background:#51301c;color:white;border:0;border-radius:8px;padding:7px 15px;font-size:18px}
 .produto-controles{justify-content:flex-end;margin-top:9px}
-.produto-controles button{min-width:46px;min-height:42px;font-weight:900}
-.produto-controles button:last-child{background:#f97316;color:#210d03}
-.produto-controles button:disabled{opacity:.35}
+.produto-controles button{min-width:46px;min-height:42px;font-size:22px;font-weight:900;cursor:pointer;touch-action:manipulation}
+.produto-controles button:first-child{background:#fff1e6;color:#9a3412;border:2px solid #fb923c}
+.produto-controles button:last-child{background:#f97316;color:#210d03;border:2px solid #f97316}
+.produto-controles button:disabled{opacity:.75;cursor:not-allowed}
 
 .total{font-size:22px;color:#fb923c;font-weight:900;margin:15px 0}
 .enviar{width:100%;border:0;border-radius:12px;background:#25d366;color:#062b12;font-size:16px;font-weight:900;padding:15px}
